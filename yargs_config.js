@@ -5,6 +5,7 @@ const {
 	getNotes,
 	postNote,
 	deleteNote,
+	patchNote,
 } = require('./notes_controller');
 
 // Customise yargs
@@ -65,6 +66,27 @@ yargs.command({
 	command: 'list',
 	describe: 'List notes',
 	handler: getNotes,
+});
+
+yargs.command({
+	command: 'modify',
+	describe: 'Modify a note',
+	builder: {
+		id: {
+			describe: 'Note ID',
+			demandOption: true,
+			type: 'number',
+		},
+		title: {
+			describe: 'Note title',
+			type: 'string',
+		},
+		body: {
+			describe: 'Note body',
+			type: 'string',
+		},
+	},
+	handler: patchNote,
 });
 
 module.exports = yargs;

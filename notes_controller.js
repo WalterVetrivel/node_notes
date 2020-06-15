@@ -1,7 +1,10 @@
-const chalk = require('chalk');
-
 const Note = require('./notes_model');
-const { displayNote } = require('./utils');
+const {
+	displayNote,
+	displaySuccess,
+	displayError,
+	displayDelete,
+} = require('./utils');
 
 // Handler to get a single note
 const getNote = argv => {
@@ -13,17 +16,17 @@ const getNote = argv => {
 		} else if (argv.title) {
 			note = Note.readByTitle(argv.title);
 		} else {
-			console.log(chalk.red('Please provide an ID or a title to read.'));
+			displayError('Please provide an ID or a title to read.');
 			return;
 		}
 
 		if (note) {
 			displayNote(note);
 		} else {
-			console.log(chalk.red('Note not found.'));
+			displayError('Note not found.');
 		}
 	} catch (e) {
-		console.log(chalk.red('Unable to fetch note.'));
+		displayError('Unable to fetch note.');
 	}
 };
 
@@ -32,10 +35,10 @@ const getNotes = () => {
 	try {
 		const notes = Note.getNotes();
 		notes.forEach(note => {
-			displayNote(note);
+			displayNote(note, true);
 		});
 	} catch (e) {
-		console.log(chalk.red('Unable to fetch notes.'));
+		displayError('Unable to fetch notes.');
 	}
 };
 
@@ -44,10 +47,11 @@ const postNote = argv => {
 	try {
 		const note = new Note(argv.title, argv.body);
 		const newNote = note.save();
-		console.log(chalk.green(`Note saved. Created note:`));
+		displaySuccess(`Note saved. Created note:`);
 		displayNote(newNote);
 	} catch (e) {
-		console.log(chalk.red('Creating note failed.'));
+		console.log(e);
+		displayError('Creating note failed.');
 	}
 };
 
@@ -59,14 +63,40 @@ const deleteNote = argv => {
 		} else if (argv.title) {
 			Note.removeByTitle(argv.title);
 		} else {
-			console.log(chalk.red('Please provide an ID or a title to read.'));
+			displayError('Please provide an ID or a title to read.');
 			return;
 		}
 
-		console.log(chalk.redBright('Note removed.'));
+		displayDelete('Note removed.');
 	} catch (e) {
-		console.log(chalk.red('Unable to remove note.'));
+		displayError('Unable to remove note.');
 	}
 };
 
-module.exports = { postNote, deleteNote, getNote, getNotes };
+// Handler to update a note
+const patchNote = argv => {
+	try {
+		if (!argv.id) {
+			displayError('Please provide an ID to update.');
+			return;
+		}
+		if (!argv.title && !argv.body) {
+			displayError('Please provide a new title or body.');
+			return;
+		}
+		if (Note.exists(argv.id)) {
+			const note = Note.readById(argv.id);
+
+			if (argv.title) note.title = argv.title;
+			if (argv.body) note.body = argv.body;
+
+			const updatedNote = note.save();
+			displaySuccess(`Note saved. Updated note:`);
+			displayNote(updatedNote);
+		}
+	} catch (e) {
+		displayError('Unable to update note.');
+	}
+};
+
+module.exports = { postNote, deleteNote, getNote, getNotes, patchNote };

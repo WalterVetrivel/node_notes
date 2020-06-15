@@ -3,10 +3,16 @@ const fs = require('fs');
 class Note {
 	static fileName = 'notes.json';
 
-	constructor(title, body) {
+	constructor(title, body, id = null) {
 		const notes = Note.readNotes();
 
-		this.id = notes.length + 1;
+		if (!id) {
+			this.id = notes.length + 1;
+			this.isNew = true;
+		} else {
+			this.id = id;
+			this.isNew = false;
+		}
 		this.title = title;
 		this.body = body;
 	}
@@ -28,16 +34,27 @@ class Note {
 		fs.writeFileSync(Note.fileName, JSON.stringify(notes));
 	}
 
+	static exists(id) {
+		const notes = Note.readNotes();
+		return notes.findIndex(note => note.id === id) >= 0;
+	}
+
 	save() {
 		const notes = Note.readNotes();
-
 		const newNote = {
 			id: this.id,
 			title: this.title,
 			body: this.body,
 		};
 
-		notes.push(newNote);
+		if (this.isNew) {
+			notes.push(newNote);
+		} else {
+			const noteIndex = notes.findIndex(note => note.id === this.id);
+			notes.splice(noteIndex, 1);
+			notes.splice(noteIndex, 0, newNote);
+		}
+
 		Note.writeNotes(notes);
 		return newNote;
 	}
@@ -65,18 +82,28 @@ class Note {
 	static readById(id) {
 		const notes = Note.readNotes();
 		const note = notes.find(note => note.id === id);
-		return note;
+
+		if (note) {
+			return new Note(note.title, note.body, note.id);
+		} else {
+			return null;
+		}
 	}
 
 	static readByTitle(title) {
 		const notes = Note.readNotes();
 		const note = notes.find(note => note.title === title);
-		return note;
+
+		if (note) {
+			return new Note(note.title, note.body, note.id);
+		} else {
+			return null;
+		}
 	}
 
 	static getNotes() {
 		const notes = Note.readNotes();
-		return notes;
+		return notes.map(note => new Note(note.title, note.body, note.id));
 	}
 }
 
