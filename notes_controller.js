@@ -1,17 +1,7 @@
 const chalk = require('chalk');
 
 const Note = require('./notes_model');
-
-const displayNote = note => {
-	console.log(`${chalk.blueBright.bold(`ID #${note.id}`)}`);
-	console.log(
-		chalk.green(
-			`${chalk.yellow.bold('Title:')} ${note.title}\n${chalk.yellow.bold(
-				'Body:'
-			)} ${note.body}`
-		)
-	);
-};
+const { displayNote } = require('./utils');
 
 // Handler to get a single note
 const getNote = argv => {
@@ -37,6 +27,7 @@ const getNote = argv => {
 	}
 };
 
+// Handler to get all notes
 const getNotes = () => {
 	try {
 		const notes = Note.getNotes();
@@ -48,6 +39,7 @@ const getNotes = () => {
 	}
 };
 
+// Handler to create a new note
 const postNote = argv => {
 	try {
 		const note = new Note(argv.title, argv.body);
@@ -59,6 +51,7 @@ const postNote = argv => {
 	}
 };
 
+// Handler to delete a note
 const deleteNote = argv => {
 	try {
 		if (argv.id) {
