@@ -50,7 +50,6 @@ const postNote = argv => {
 		displaySuccess(`Note saved. Created note:`);
 		displayNote(newNote);
 	} catch (e) {
-		console.log(e);
 		displayError('Creating note failed.');
 	}
 };
