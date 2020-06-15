@@ -4,6 +4,9 @@ class Note {
 	static fileName = 'notes.json';
 
 	constructor(title, body) {
+		const notes = Note.readNotes();
+
+		this.id = notes.length + 1;
 		this.title = title;
 		this.body = body;
 	}
@@ -29,6 +32,7 @@ class Note {
 		const notes = Note.readNotes();
 
 		const newNote = {
+			id: this.id,
 			title: this.title,
 			body: this.body,
 		};
@@ -36,6 +40,16 @@ class Note {
 		notes.push(newNote);
 		Note.writeNotes(notes);
 		return newNote;
+	}
+
+	static removeById(id) {
+		try {
+			const notes = Note.readNotes();
+			const newNotes = notes.filter(note => note.id !== id);
+			Note.writeNotes(newNotes);
+		} catch (e) {
+			throw e;
+		}
 	}
 
 	static removeByTitle(title) {
@@ -46,6 +60,12 @@ class Note {
 		} catch (e) {
 			throw e;
 		}
+	}
+
+	static readById(id) {
+		const notes = Note.readNotes();
+		const note = notes.find(note => note.id === id);
+		return note;
 	}
 
 	static readByTitle(title) {

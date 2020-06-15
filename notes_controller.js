@@ -2,36 +2,33 @@ const chalk = require('chalk');
 
 const Note = require('./notes_model');
 
-const postNote = argv => {
-	try {
-		const note = new Note(argv.title, argv.body);
-		const newNote = note.save();
-		console.log(
-			chalk.green(
-				`Note saved. Created note: \n${chalk.yellow.bold('Title:')} ${
-					newNote.title
-				}\n${chalk.yellow.bold('Body:')} ${newNote.body}`
-			)
-		);
-	} catch (e) {
-		console.log(chalk.red('Creating note failed.'));
-	}
+const displayNote = note => {
+	console.log(`${chalk.blueBright.bold(`ID #${note.id}`)}`);
+	console.log(
+		chalk.green(
+			`${chalk.yellow.bold('Title:')} ${note.title}\n${chalk.yellow.bold(
+				'Body:'
+			)} ${note.body}`
+		)
+	);
 };
 
-const deleteNote = argv => {
-	try {
-		Note.removeByTitle(argv.title);
-		console.log(chalk.redBright('Note removed.'));
-	} catch (e) {
-		console.log(chalk.red('Unable to fetch note.'));
-	}
-};
-
+// Handler to get a single note
 const getNote = argv => {
 	try {
-		const note = Note.readByTitle(argv.title);
+		let note;
+
+		if (argv.id) {
+			note = Note.readById(argv.id);
+		} else if (argv.title) {
+			note = Note.readByTitle(argv.title);
+		} else {
+			console.log(chalk.red('Please provide an ID or a title to read.'));
+			return;
+		}
+
 		if (note) {
-			console.log(note);
+			displayNote(note);
 		} else {
 			console.log(chalk.red('Note not found.'));
 		}
@@ -43,18 +40,39 @@ const getNote = argv => {
 const getNotes = () => {
 	try {
 		const notes = Note.getNotes();
-		notes.forEach((note, i) => {
-			console.log(`${chalk.blueBright.bold(`Note #${i + 1}`)}`);
-			console.log(
-				chalk.green(
-					`${chalk.yellow.bold('Title:')} ${note.title}\n${chalk.yellow.bold(
-						'Body:'
-					)} ${note.body}\n`
-				)
-			);
+		notes.forEach(note => {
+			displayNote(note);
 		});
 	} catch (e) {
 		console.log(chalk.red('Unable to fetch notes.'));
+	}
+};
+
+const postNote = argv => {
+	try {
+		const note = new Note(argv.title, argv.body);
+		const newNote = note.save();
+		console.log(chalk.green(`Note saved. Created note:`));
+		displayNote(newNote);
+	} catch (e) {
+		console.log(chalk.red('Creating note failed.'));
+	}
+};
+
+const deleteNote = argv => {
+	try {
+		if (argv.id) {
+			Note.removeById(argv.id);
+		} else if (argv.title) {
+			Note.removeByTitle(argv.title);
+		} else {
+			console.log(chalk.red('Please provide an ID or a title to read.'));
+			return;
+		}
+
+		console.log(chalk.redBright('Note removed.'));
+	} catch (e) {
+		console.log(chalk.red('Unable to remove note.'));
 	}
 };
 
